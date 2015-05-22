@@ -48,7 +48,9 @@
 
 	// includes
 	var React = __webpack_require__(78);
+	var StyleSheet = __webpack_require__(157);
 	var mountTarget = document.getElementById('mount-point');
+
 
 	var CountComp = React.createClass({displayName: "CountComp",
 	    render: function() {
@@ -70,7 +72,7 @@
 	           React.createElement("div", {className: "nameComp"}, 
 	               React.createElement("h1", null, this.props.name), 
 	               React.createElement(CountComp, {count: this.state.count}), 
-	               React.createElement("button", {type: "button", onClick: this.incrementCount}, "Incement")
+	               React.createElement("button", {type: "button", style: StyleSheet.foo, onClick: this.incrementCount}, "Incement")
 	           )
 	        );
 	    },
@@ -20462,6 +20464,780 @@
 	module.exports = toArray;
 
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(24)))
+
+/***/ },
+/* 157 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Created by jotalora on 15-05-21.
+	 */
+	var StyleSheet = __webpack_require__(158);
+	module.exports = StyleSheet.create({
+	    foo: {
+	        color: 'red',
+	        width: '100px',
+	        height: '50px',
+	        backgroundColor: '#69d2e7',
+	        outline: 'none'
+	    }
+	});
+
+/***/ },
+/* 158 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+
+	var assign                          = __webpack_require__(20);
+	var ReactElementExtended            = __webpack_require__(159);
+	var ReactCompositeComponentExtended = __webpack_require__(160);
+	var ExecutionEnvironment            = __webpack_require__(23);
+
+	var applyMediaQueries               = __webpack_require__(161);
+	var generateUniqueCSSClassName      = __webpack_require__(162);
+	var stylesToCSS                     = __webpack_require__(163);
+
+	var isArray                         = Array.isArray;
+	var keys                            = Object.keys;
+
+	var registeredMediaQueries          = [];
+	var styles                          = [];
+	var mediaQueries                    = {};
+
+	var isProduction                    = process.env.NODE_ENV === 'production';
+
+	function createStyle(props, className, uniqueKey) {
+	  styles.push({
+	    style: props,
+	    className: className,
+	    uniqueKey: uniqueKey
+	  });
+	  return className;
+	}
+
+	function createStyleSheet(stylesheet, useClassName) {
+	  if (!useClassName) {
+	    // default
+	    stylesheet = applyMediaQueries(registeredMediaQueries, stylesheet, true);
+	    return stylesheet;
+	  }
+	  else {
+	    ReactElementExtended.maxOverridesLength = StyleSheet.maxOverridesLength;
+
+	    // export to separate CSS classes
+	    var styleSheetStyles = keys(stylesheet);
+	    var results = {};
+	    for (var i = 0, l = styleSheetStyles.length; i < l; i++) {
+	      var styleName = styleSheetStyles[i];
+	      var isMediaQuery = !styleName.indexOf('@media ');
+	      var style = stylesheet[styleName];
+	      var origUniqueKey = generateUniqueCSSClassName();
+	      var uniqueKey = origUniqueKey;
+	      if (!isProduction) {
+	        uniqueKey = styleName + '_' + uniqueKey;
+	      }
+
+	      if (isMediaQuery) {
+	        var mqStyleNames = keys(style);
+	        var newStyle = {};
+	        for (var i2 = 0, l2 = mqStyleNames.length; i2 < l2; i2++) {
+	          var mqStyleName = mqStyleNames[i2];
+	          var mqStyle = style[mqStyleName];
+	          var uniqueKey2 = results[mqStyleName];
+	          if (uniqueKey2) {
+	            newStyle[uniqueKey2] = mqStyle;
+	          }
+	        }
+
+	        if (!mediaQueries[styleName]) {
+	          mediaQueries[styleName] = {};
+	        }
+
+	        keys(newStyle).reduce(function (acc, key) {
+	          if (!acc[key]) {
+	            acc[key] = newStyle[key];
+	          }
+	          return acc;
+	        }, mediaQueries[styleName]);
+
+	          continue;
+	      }
+	      results[styleName] = createStyle(style, isMediaQuery ? styleName : uniqueKey, origUniqueKey);
+	    }
+
+	    return results;
+	  }
+	}
+
+	var StyleSheet = {
+	  compile: function(maxLength) {
+	    var mq = keys(mediaQueries).map(function(query){
+	      return {
+	        style: mediaQueries[query],
+	        className: query,
+	        uniqueKey: ''
+	      };
+	    });
+
+	    return stylesToCSS(styles.concat(mq), maxLength || 10);
+	  },
+	  create: createStyleSheet
+	};
+
+	ReactCompositeComponentExtended.associateToMediaQuery = function(comp) {
+	  var styles = comp.props.__cachedStyles;
+	  for (var i = 0, l = styles.length; i < l; i++) {
+	    var style = styles[i];
+	    for (var j = 0, l2 = registeredMediaQueries.length; j < l2; j++) {
+	      var registeredMediaQuery = registeredMediaQueries[j];
+	      var stylesheet = registeredMediaQuery.compiled;
+	      var stylesheetNames = registeredMediaQuery.styleNames;
+	      for (var i2 = 0, l3 = stylesheetNames.length; i2 < l3; i2++) {
+	        var styleName = stylesheetNames[i2];
+	        var compiledStyle = stylesheet[styleName];
+	        if (style === compiledStyle) {
+	          registeredMediaQuery.elements.push(comp);
+	        }
+	      }
+	    }
+	  }
+	};
+
+
+	module.exports = StyleSheet;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(24)))
+
+/***/ },
+/* 159 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var ReactElement  = __webpack_require__(9);
+	var assign        = __webpack_require__(20);
+	var applyStyles   = __webpack_require__(164);
+	var isArray       = Array.isArray;
+
+	var helperObj = {};
+
+	function buildProps(props) {
+	  var builtProps = {
+	    className: props.className || null,
+	    style: props.style ? assign({}, props.style) : null,
+	    styles: undefined
+	  };
+	  applyStyles(builtProps, props.styles, 0, null, helperObj.maxOverridesLength);
+	  return builtProps;
+	}
+
+	var originalCreateElement = ReactElement.createElement;
+	ReactElement.createElement = function(type, props) {
+	  var args = arguments;
+	  if (props &&
+	      props.styles &&
+	      !props.__cachedStyles &&
+	      typeof type === 'string') {
+	    props.__cachedStyles = isArray(props.styles) ? props.styles : [props.styles];
+	    assign(props, buildProps(props));
+	  }
+	  return originalCreateElement.apply(this, [type, props].concat(Array.prototype.slice.call(args, 2)));
+	};
+
+	module.exports = helperObj;
+
+
+/***/ },
+/* 160 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var helperObj = {};
+
+	var ReactCompositeComponent = __webpack_require__(130);
+	var ReactComponent = __webpack_require__(5);
+	var originalMountComponent;
+	var mountExtensionPoint;
+
+	if (ReactCompositeComponent.Mixin) {
+	  mountExtensionPoint = ReactCompositeComponent;
+	  originalMountComponent = ReactCompositeComponent.Mixin.mountComponent;
+	} else {
+	  mountExtensionPoint = ReactComponent;
+	  originalMountComponent = ReactComponent.Mixin.mountComponent;
+	}
+
+	mountExtensionPoint.Mixin.mountComponent = function(rootID, transaction, context) {
+	  var call = originalMountComponent.call(this, rootID, transaction, context);
+	  var instance = !this._instance ? this : this._instance;
+	  var props = instance.props;
+	  if (props && props.__cachedStyles) {
+	    helperObj.associateToMediaQuery(instance);
+	  }
+	  return call;
+	};
+
+	module.exports = helperObj;
+
+
+/***/ },
+/* 161 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+
+	var assign                 = __webpack_require__(20);
+	var recalcMediaQueryStyles = __webpack_require__(165);
+
+	var matchMedia = null;
+	if (typeof window !== 'undefined' && !window.__ReactStyle__) {
+	  matchMedia = window.matchMedia;
+	}
+	var mediaQueryBreakPoints = {};
+	var hasVisibilityChangeListener = false;
+
+	function applyMediaQueries(registeredMediaQueries, stylesheet, register) {
+	  var newStyleSheet = {};
+	  var styleNames = Object.keys(stylesheet);
+
+	  function recalc() {
+	    recalcMediaQueryStyles(registeredMediaQueries);
+	  }
+
+	  if (!hasVisibilityChangeListener
+	      && typeof document !== 'undefined'
+	      && 'visibilityState' in document) {
+	    hasVisibilityChangeListener = true;
+	    document.addEventListener("visibilitychange", function() {
+	      if (document.visibilityState === 'visible') {
+	        recalc();
+	      }
+	    });
+	  }
+
+	  for (var i = 0, l = styleNames.length; i < l; i++) {
+	    var styleName = styleNames[i];
+	    var style = stylesheet[styleName];
+	    // only position 0 = false, so !0 = true
+	    if (!styleName.indexOf('@media')) {
+	      var mediaQuery = styleName.substr('@media '.length);
+	      var isMediaQueryActive = false;
+
+	      if (matchMedia && matchMedia(mediaQuery).matches) {
+	        isMediaQueryActive = true;
+	        var mqStyleNames = Object.keys(style);
+	        for (var j = 0, l2 = mqStyleNames.length; j < l2; j++) {
+	          var mqStyleName = mqStyleNames[j];
+
+	          // warn for undeclared block
+	          if ("production" !== process.env.NODE_ENV) {
+	            if (!stylesheet[mqStyleName]) {
+	              console.warn('Media query \'' + styleName + '\' referred to undeclared style block \'' + mqStyleName + '\'.');
+	              continue;
+	            }
+	          }
+	          newStyleSheet[mqStyleName] = assign({}, newStyleSheet[mqStyleName], style[mqStyleName]);
+	        }
+	      }
+
+	      // register media query for recalc
+	      if (register) {
+	        registeredMediaQueries.push({
+	          compiled: newStyleSheet,
+	          elements: [],
+	          isActive: isMediaQueryActive,
+	          query: mediaQuery,
+	          styleNames: styleNames,
+	          stylesheet: stylesheet
+	        });
+
+	        if (matchMedia && !mediaQueryBreakPoints[mediaQuery]) {
+	          matchMedia(mediaQuery).addListener(recalc);
+	          mediaQueryBreakPoints[mediaQuery] = true;
+	        }
+	      }
+	    }
+	    else {
+	      newStyleSheet[styleName] = style;
+	    }
+	  }
+
+	  return newStyleSheet;
+	}
+
+
+	module.exports = applyMediaQueries;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(24)))
+
+/***/ },
+/* 162 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var currCSSKey = 0;
+	var allowedCharacters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+	/**
+	 * Get an unique CSS key for the className in a file. It supports up
+	 * to 140608 classNames.
+	 *
+	 * @return {string}
+	 */
+	function generateUniqueCSSClassName() {
+	  var allowedCharactersLength = allowedCharacters.length;
+	  var key1unit = allowedCharactersLength * allowedCharactersLength;
+	  var key1pos = Math.floor(currCSSKey / key1unit);
+	  var key1 = allowedCharacters[key1pos - 1];
+	  var key2pos = Math.floor((currCSSKey -
+	  (key1 ? key1pos * key1unit : 0)) / allowedCharactersLength);
+	  var key2 = allowedCharacters[key2pos - 1];
+	  var key3 = allowedCharacters[(currCSSKey -
+	                               (key1 ? (key1pos * key1unit) : 0) -
+	                               (key2 ? key2pos * allowedCharactersLength : 0))];
+	  var key = '';
+	  if (key1) {
+	    key += key1;
+	  }
+	  if (key2) {
+	    key += key2;
+	  }
+	  if (key3) {
+	    key += key3;
+	  }
+	  currCSSKey++;
+
+	  return key;
+	}
+
+	module.exports = generateUniqueCSSClassName;
+
+/***/ },
+/* 163 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+
+	var isUnitlessNumber = __webpack_require__(132).isUnitlessNumber;
+	var hyphenateStyleName = __webpack_require__(135);
+	var isArray = Array.isArray;
+	var keys = Object.keys;
+	var unsupportedPseudoClasses = __webpack_require__(166);
+
+	var counter = 1;
+	// Follows syntax at https://developer.mozilla.org/en-US/docs/Web/CSS/content,
+	// including multiple space separated values.
+	var unquotedContentValueRegex = /^(normal|none|(\b(url\([^)]*\)|chapter_counter|attr\([^)]*\)|(no-)?(open|close)-quote|inherit)((\b\s*)|$|\s+))+)$/;
+
+	function buildRule(result, key, value, selector) {
+	  if (!isUnitlessNumber[key] && typeof value === 'number') {
+	    value = '' + value + 'px';
+	  }
+	  else if (key === 'content' && !unquotedContentValueRegex.test(value)) {
+	    value = "'" + value.replace(/'/g, "\\'") + "'";
+	  }
+
+	  result.css += '  ' + hyphenateStyleName(key) + ': ' + value + ';\n';
+	}
+
+	function buildRules(result, rules, uniqueKey, selector, maxLength, key) {
+	  if (!rules || keys(rules).length === 0) {
+	    return result;
+	  }
+
+	  var replicatedSelector = replicateSelector(selector, uniqueKey, maxLength, key);
+	  result.css += replicatedSelector + ' {\n';
+	  var styleKeys = keys(rules);
+	  for (var j = 0, l = styleKeys.length; j < l; j++) {
+	    var styleKey = styleKeys[j];
+	    var value = rules[styleKey];
+
+	    if (unsupportedPseudoClasses[styleKey.split('(')[0].trim()]) {
+	      if ("production" !== process.env.NODE_ENV) {
+	        console.warn('You are trying to use pseudo class ' + styleKey +
+	        ', which we don\'t support as this is better implemented using ' +
+	        'JavaScript.');
+	      }
+
+	      continue;
+	    }
+
+	    if (isArray(value)) {
+	      for (var i = 0, len = value.length; i < len; i++) {
+	        buildRule(result, styleKey, value[i], selector, maxLength);
+	      }
+	    }
+	    else {
+	      buildRule(result, styleKey, value, selector, maxLength);
+	    }
+	  }
+	  result.css += '}\n';
+
+	  return result;
+	}
+
+	function buildMediaQuery(result, rules, selector, maxLength) {
+	  result.css += selector + '{\n';
+	  var ruleKeys = keys(rules);
+	  for (var i = 0, l = ruleKeys.length; i < l; i++) {
+	    var ruleKey = ruleKeys[i];
+	    var rule = rules[ruleKey];
+	    var ruleKeySplit = ruleKey.split('_');
+	    var uniqueKey = ruleKeySplit[ruleKeySplit.length - 1];
+	    buildRules(result, rule, uniqueKey, '.' + ruleKey, maxLength);
+	  }
+	  result.css += '}\n';
+	}
+
+	function replicateSelector(selector, uniqueKey, max, key) {
+	  var maxLength = max || 10;
+	  var _key = key || '';
+	  var replicatedSelector = [];
+	  for (var i = 0; i < maxLength; i++) {
+	    var newSelector = '';
+	    for (var j = 0, l2 = i + 1; j < l2; j++) {
+	      var selectorX = j === 0 ? selector : '.' + uniqueKey;
+	      newSelector += selectorX + (j !==0 ? j : '');
+	    }
+	    replicatedSelector[i] = newSelector + _key;
+	  }
+	  return replicatedSelector.join(',');
+	}
+
+	function buildStyle(result, style, selector, maxLength) {
+	  if (!style.className) {
+	    return;
+	  }
+	  if (!selector && result.classNames[style.className]) {
+	    return;
+	  }
+	  if (!selector) {
+	    result.classNames[style.className] = counter++;
+	    selector = '.' + style.className;
+	  }
+	  if (!selector.indexOf('.@media ')) {
+	    buildMediaQuery(result, style.style, selector.substr(1), maxLength);
+	  }
+	  else {
+	    buildRules(result, style.style, style.uniqueKey, selector, maxLength);
+	  }
+	}
+
+	function stylesToCSS(styles, maxLength) {
+	  if (!isArray(styles)) {
+	    styles = [styles];
+	  }
+
+	  var result = {css: '', classNames: {}};
+	  for (var i = 0, len = styles.length; i < len; i++) {
+	    var style = styles[i];
+	    buildStyle(result, style, null, maxLength);
+	  }
+	  return result;
+	}
+
+	module.exports = stylesToCSS;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(24)))
+
+/***/ },
+/* 164 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+
+	var CSSProperty = __webpack_require__(132);
+	var isArray     = Array.isArray;
+	var keys        = Object.keys;
+
+	var COMPLEX_OVERRIDES = CSSProperty.shorthandPropertyExpansions;
+
+	function applyClassName(props, className, order, maxOverridesLength) {
+	  if (!props.className) {
+	    props.className = '';
+	  }
+	  var length = !maxOverridesLength || (order + 1) <= maxOverridesLength ? order + 1 : maxOverridesLength;
+	  var uniquePartSplit = className.split('_');
+	  var unique = uniquePartSplit[uniquePartSplit.length - 1];
+	  for (var j = 0; j < length; j++) {
+	    var selector = j === 0 ? className : unique;
+	    props.className += ' ' + selector + (j === 0 ? '' : j);
+	  }
+
+	  return order + 1;
+	}
+
+	function applyInlineStyle(props, style, order) {
+	  if (!props.style) {
+	    props.style = {};
+	  }
+	  var styleKeys = keys(style);
+	  for (var i = 0, l = styleKeys.length; i < l; i++) {
+	    var key = styleKeys[i];
+	    props.style[key] = style[key];
+	    applyOverrides(props, key);
+	  }
+
+	  return order;
+	}
+
+	function applyOverrides(props, key) {
+	  var overrides = COMPLEX_OVERRIDES[key];
+	  if (overrides) {
+	    var overridesKeys = keys(overrides);
+	    for (var i = 0, l = overridesKeys.length; i < l; i++) {
+	      var overrideKey = overridesKeys[i];
+	      props.style[overrideKey] = '';
+	    }
+	  }
+	}
+
+	function applyStyle(props, style, order, maxOverridesLength) {
+	  if (style === null || style === undefined || style === false) {
+	    return order;
+	  }
+	  else if (typeof style === 'string' && order < 10) {
+	    return applyClassName(props, style, order, maxOverridesLength);
+	  }
+	  else {
+	    return applyInlineStyle(props, style, order);
+	  }
+	}
+
+	function applyStyles(props, styles, order, inline, maxOverridesLength) {
+	  if (order === undefined) {
+	    order = 0;
+	    inline = false;
+	  }
+
+	  if (isArray(styles)) {
+	    for (var i = 0, len = styles.length; i < len; i++) {
+	      var style = styles[i];
+	      if ("production" !== process.env.NODE_ENV && style) {
+	        if (typeof style === 'object' && !Array.isArray(style)) {
+	          inline = true;
+	        }
+	        else if (inline && typeof style === 'string') {
+	          console.warn('You are trying to override inline styles with a ' +
+	                       'class, which might cause issues due to classes ' +
+	                       'having lower CSS specificity then inline styles.');
+	        }
+	      }
+	      order = applyStyles(props, style, order, inline, maxOverridesLength);
+	    }
+	    return order;
+	  }
+	  else {
+	    return applyStyle(props, styles, order, maxOverridesLength);
+	  }
+	}
+
+	module.exports = applyStyles;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(24)))
+
+/***/ },
+/* 165 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+
+	var assign                          = __webpack_require__(20);
+	var applyStyles                     = __webpack_require__(164);
+	var enqueueForceUpdate;
+
+	var ReactElement = __webpack_require__(9);
+	var ReactUpdates;
+
+	// fugly
+	try {
+	  // React 0.13
+	  enqueueForceUpdate = __webpack_require__(31).enqueueForceUpdate;
+	  ReactUpdates = __webpack_require__(79);
+
+	} catch(e) {
+	  // React 0.12
+	  enqueueForceUpdate = __webpack_require__(79).enqueueUpdate;
+	}
+	var matchMedia = null;
+	if (typeof window !== 'undefined' && !window.__ReactStyle__) {
+	  matchMedia = window.matchMedia;
+	}
+
+	function recalcMediaQueryStyles(registeredMediaQueries) {
+	  for (var i = 0, l = registeredMediaQueries.length; i < l; i++) {
+	    var registeredMediaQuery = registeredMediaQueries[i];
+	    var matchesQuery = matchMedia(registeredMediaQuery.query).matches;
+	    var isActive = registeredMediaQuery.isActive;
+	    if ((matchesQuery && !isActive) || (!matchesQuery && isActive)) {
+	      recalcMediaQueryStyle(registeredMediaQuery, registeredMediaQueries);
+	    }
+	  }
+	}
+
+	function recalcMediaQueryStyle(registeredMediaQuery, registeredMediaQueries) {
+	  var applyMediaQueries = __webpack_require__(161);
+	  registeredMediaQuery.isActive = !registeredMediaQuery.isActive;
+	  var compiledStyleSheet = applyMediaQueries(registeredMediaQueries, registeredMediaQuery.stylesheet, false);
+	  var elements = registeredMediaQuery.elements;
+	  var i, l;
+	  for (i = 0, l = elements.length; i < l; i++) {
+	    var element = elements[i];
+	    recalcElementStyles(registeredMediaQuery, element, compiledStyleSheet);
+	  }
+
+	  var styleNames = registeredMediaQuery.styleNames;
+	  for (i = 0, l = styleNames.length; i < l; i++) {
+	    var styleName = styleNames[i];
+	    registeredMediaQuery.compiled[styleName] = compiledStyleSheet[styleName];
+	  }
+	}
+
+	function recalcElementStyles(registeredMediaQuery, element, newCompiledStyleSheet) {
+	  var styleSheetNames = registeredMediaQuery.styleNames;
+	  var oldCompiledStyleSheet = registeredMediaQuery.compiled;
+	  var oldElementStyles = element.props.__cachedStyles;
+	  var newElementStyles = [];
+	  for (var i = 0, l = oldElementStyles.length; i < l; i++) {
+	    var oldElementStyle = oldElementStyles[i];
+	    _setElementStyles(
+	      newElementStyles,
+	      i,
+	      oldElementStyle,
+	      styleSheetNames,
+	      oldCompiledStyleSheet,
+	      newCompiledStyleSheet);
+	  }
+	  var newProps = {};
+	  applyStyles(newProps, newElementStyles, 0);
+	  if (element._setPropsInternal) {
+
+	    // React 0.12
+	    element._setPropsInternal({
+	      style: newProps.style,
+	      __cachedStyles: newElementStyles});
+	  } else {
+
+	    // React 0.13
+	    var instance = element._reactInternalInstance;
+	    instance._setPropsInternal({
+	      style : newProps.style,
+	      __cachedStyles: newElementStyles
+	    });
+	  }
+
+	  setChildElementStyles(element, styleSheetNames, oldCompiledStyleSheet, newCompiledStyleSheet);
+	  enqueueForceUpdate(element);
+	}
+
+	function setChildElementStyles(element, styleSheetNames, oldCompiledStyleSheet, newCompiledStyleSheet) {
+	  var children = element.props.children;
+	  if (children) {
+	    for (var i = 0, l = children.length; i < l; i++) {
+	      var child = children[i];
+	      if (child.props && child.props.styles) {
+	        var newChildStyles = [];
+	        var childStyles = child.props.styles;
+	        for (var childStyleIndex = 0, childStylesLength = childStyles.length; childStyleIndex < childStylesLength; childStyleIndex++) {
+	          var childStyle = childStyles[childStyleIndex];
+	          _setElementStyles(
+	            newChildStyles,
+	            childStyleIndex,
+	            childStyle,
+	            styleSheetNames,
+	            oldCompiledStyleSheet,
+	            newCompiledStyleSheet
+	          );
+	        }
+	        if ("production" !== process.env.NODE_ENV) {
+	          if (child._store.originalProps) {
+	            child._store.originalProps.styles = newChildStyles;
+	          }
+	          else {
+	            child._store.props.styles = newChildStyles;
+	          }
+	        }
+	        child.props.styles = newChildStyles;
+	      }
+	    }
+	  }
+	}
+
+	function _setElementStyles(elementStyles, j, elementStyle, styleSheetNames, oldCompiledStyleSheet, newCompiledStyleSheet) {
+	  elementStyles[j] = elementStyle;
+	  if (!elementStyle) {
+	    return;
+	  }
+	  for (var i = 0, l = styleSheetNames.length; i < l; i++) {
+	    var styleName = styleSheetNames[i];
+	    var oldCompiledStyle = oldCompiledStyleSheet[styleName];
+	    var newCompiledStyle = newCompiledStyleSheet[styleName];
+	    if (oldCompiledStyle === elementStyle) {
+	      elementStyles[j] = newCompiledStyle;
+	    }
+	  }
+	}
+
+	module.exports = recalcMediaQueryStyles;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(24)))
+
+/***/ },
+/* 166 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * A list of unsupported pseudo classes
+	 */
+	'use strict';
+
+	var unsupportedPseudoClasses = {
+	  ':active': true,
+	  ':checked': true,
+	  ':default': true,
+	  ':dir': true,
+	  ':disabled': true,
+	  ':empty': true,
+	  ':enabled': true,
+	  ':first': true,
+	  ':first-child': true,
+	  ':first-of-type': true,
+	  ':fullscreen': true,
+	  ':focus': true,
+	  ':hover': true,
+	  ':indeterminate': true,
+	  ':in-range': true,
+	  ':invalid': true,
+	  ':lang': true,
+	  ':last-child': true,
+	  ':last-of-type': true,
+	  ':left': true,
+	  ':link': true,
+	  ':not': true,
+	  ':nth-child': true,
+	  ':nth-last-child': true,
+	  ':nth-last-of-type': true,
+	  ':nth-of-type': true,
+	  ':only-child': true,
+	  ':only-of-type': true,
+	  ':optional': true,
+	  ':out-of-range': true,
+	  ':read-only': true,
+	  ':read-write': true,
+	  ':required': true,
+	  ':right': true,
+	  ':root': true,
+	  ':scope': true,
+	  ':target': true,
+	  ':valid': true,
+	  ':visited': true
+	};
+
+	module.exports = unsupportedPseudoClasses;
+
 
 /***/ }
 /******/ ]);

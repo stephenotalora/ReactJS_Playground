@@ -2,7 +2,9 @@
 
 // includes
 var React = require('react');
+var StyleSheet = require('./layout.js');
 var mountTarget = document.getElementById('mount-point');
+
 
 var CountComp = React.createClass({
     render: function() {
@@ -24,7 +26,7 @@ var TestComponent = React.createClass({
            <div className='nameComp'>
                <h1>{this.props.name}</h1>
                <CountComp count={this.state.count} />
-               <button type="button" onClick={this.incrementCount}>Incement</button>
+               <button type="button" style={StyleSheet.foo} onClick={this.incrementCount}>Incement</button>
            </div>
         );
     },
