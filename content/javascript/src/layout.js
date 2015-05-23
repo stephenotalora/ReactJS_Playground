@@ -3,11 +3,27 @@
  */
 var StyleSheet = require('react-style');
 module.exports = StyleSheet.create({
-    foo: {
+    btn_container: {
+        position: 'relative',
+        left: '35%',
+        bottom: '20px'
+    },
+
+    btn: {
         color: 'red',
-        width: '100px',
-        height: '50px',
+        width: '200px',
+        height: '25px',
         backgroundColor: '#69d2e7',
-        outline: 'none'
+        outline: 'none',
+        fontSize: '15px'
+    },
+
+    nameComp: {
+        backgroundColor: 'white',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        width: '50%',
+        top: '20px',
+        position: 'relative'
     }
 });
